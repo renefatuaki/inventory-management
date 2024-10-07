@@ -11,7 +11,7 @@ import jakarta.validation.constraints.NotNull
 @Entity
 class Product(
     @Id @GeneratedValue
-    var id: Long = 0,
+    var id: Long? = null,
 
     @field:NotBlank
     var name: String = "",
