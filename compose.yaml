@@ -6,5 +6,20 @@ services:
     restart: always
     environment:
       - POSTGRES_DB=inventory_db
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=secret
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+  api:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - DB_URL=jdbc:postgresql://db:5432/inventory_db
+        - DB_USERNAME=${DB_USERNAME}
+        - DB_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    environment:
+      - DB_URL=jdbc:postgresql://db:5432/inventory_db
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
