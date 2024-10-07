@@ -3,6 +3,7 @@ package dev.elfa.inventorymanagement.controller
 import dev.elfa.inventorymanagement.dto.ProductDto
 import dev.elfa.inventorymanagement.model.Product
 import dev.elfa.inventorymanagement.service.ProductService
+import jakarta.validation.Valid
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PagedModel
@@ -34,14 +35,14 @@ class ProductController(private val productService: ProductService) {
     }
 
     @PostMapping
-    fun addProduct(@RequestBody product: Product): ResponseEntity<Product> {
+    fun addProduct(@RequestBody @Valid product: Product): ResponseEntity<Product> {
         val createdProduct = productService.addProduct(product)
 
         return ResponseEntity.ok(createdProduct)
     }
 
     @PutMapping("/{id}")
-    fun updateProduct(@PathVariable id: String, @RequestBody product: Product): ResponseEntity<ProductDto> {
+    fun updateProduct(@PathVariable id: String, @RequestBody @Valid product: Product): ResponseEntity<ProductDto> {
         val productDto = productService.updateProduct(id, product)
 
         return ResponseEntity.accepted().body(productDto)
