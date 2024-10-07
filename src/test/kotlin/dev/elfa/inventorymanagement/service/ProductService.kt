@@ -1,10 +1,9 @@
-package dev.elfa.inventorymanagement.system
+package dev.elfa.inventorymanagement.service
 
 import dev.elfa.inventorymanagement.dto.ProductDto
 import dev.elfa.inventorymanagement.exception.ProductNotFoundException
 import dev.elfa.inventorymanagement.model.Product
 import dev.elfa.inventorymanagement.repository.ProductRepository
-import dev.elfa.inventorymanagement.service.ProductService
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.any
 import org.mockito.Mockito.mock
@@ -20,7 +19,7 @@ import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class ProductService {
+class ProductServiceTest {
     private val productRepository: ProductRepository = mock()
     private val productService: ProductService = ProductService(productRepository)
 
