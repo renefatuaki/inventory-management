@@ -1,10 +1,8 @@
 package dev.elfa.inventorymanagement.controller
 
 import dev.elfa.inventorymanagement.dto.ProductDto
-import dev.elfa.inventorymanagement.model.Product
 import dev.elfa.inventorymanagement.service.ProductService
 import dev.elfa.inventorymanagement.util.logger
-import jakarta.validation.Valid
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PagedModel
@@ -41,23 +39,23 @@ class ProductController(private val productService: ProductService) {
     }
 
     @PostMapping
-    fun addProduct(@RequestBody @Valid product: Product): ResponseEntity<Product> {
+    fun addProduct(@RequestBody productDto: ProductDto): ResponseEntity<ProductDto> {
         logger.info("POST /api/products")
-        logger.info(product.toString())
+        logger.info(productDto.toString())
 
-        val createdProduct = productService.addProduct(product)
+        val createdProduct = productService.addProduct(productDto)
 
         return ResponseEntity.ok(createdProduct)
     }
 
     @PutMapping("/{id}")
-    fun updateProduct(@PathVariable id: String, @RequestBody @Valid product: Product): ResponseEntity<ProductDto> {
+    fun updateProduct(@PathVariable id: String, @RequestBody productDto: ProductDto): ResponseEntity<ProductDto> {
         logger.info("PUT /api/products/$id")
-        logger.info(product.toString())
+        logger.info(productDto.toString())
 
-        val productDto = productService.updateProduct(id, product)
+        val updatedProductDto = productService.updateProduct(id, productDto)
 
-        return ResponseEntity.accepted().body(productDto)
+        return ResponseEntity.accepted().body(updatedProductDto)
     }
 
     @DeleteMapping("/{id}")
@@ -65,7 +63,7 @@ class ProductController(private val productService: ProductService) {
         logger.info("DELETE /api/products/$id")
 
         productService.deleteProduct(id)
-        
+
         return ResponseEntity.noContent().build()
     }
 }

@@ -4,11 +4,14 @@ import dev.elfa.inventorymanagement.dto.ProductDto
 import dev.elfa.inventorymanagement.exception.ProductNotFoundException
 import dev.elfa.inventorymanagement.model.Product
 import dev.elfa.inventorymanagement.repository.ProductRepository
+import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PagedModel
 import org.springframework.stereotype.Service
+import org.springframework.validation.annotation.Validated
 
 @Service
+@Validated
 class ProductService(private val productRepository: ProductRepository) {
 
     fun getPageableProducts(pageable: Pageable): PagedModel<ProductDto> {
@@ -18,7 +21,13 @@ class ProductService(private val productRepository: ProductRepository) {
         return PagedModel(pageableProductDtos)
     }
 
-    fun addProduct(product: Product): Product = productRepository.save<Product>(product)
+    fun addProduct(@Valid productDto: ProductDto): ProductDto {
+        val product = productDto.toProduct()
+        val savedProduct = runCatching { productRepository.save<Product>(product) }
+            .getOrElse { throw RuntimeException("Failed to save product") }
+
+        return savedProduct.toDto()
+    }
 
     fun getProduct(id: String): ProductDto {
         val product = productRepository.findById(id.toLong()).orElseThrow {
@@ -28,7 +37,7 @@ class ProductService(private val productRepository: ProductRepository) {
         return ProductDto(product.id!!, product.name, product.description, product.price, product.stock)
     }
 
-    fun updateProduct(id: String, updatedProduct: Product): ProductDto? {
+    fun updateProduct(id: String, @Valid updatedProduct: ProductDto): ProductDto? {
         val product = productRepository.findById(id.toLong()).orElseThrow {
             ProductNotFoundException("Product not found with id: $id")
         }
