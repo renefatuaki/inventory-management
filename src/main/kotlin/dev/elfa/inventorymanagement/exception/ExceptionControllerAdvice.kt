@@ -1,7 +1,8 @@
 package dev.elfa.inventorymanagement.exception
 
 import dev.elfa.inventorymanagement.model.ErrorMessage
-import dev.elfa.inventorymanagement.model.ErrorValidation
+import dev.elfa.inventorymanagement.model.FieldError
+import jakarta.validation.ConstraintViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -32,11 +33,12 @@ class ExceptionControllerAdvice {
     }
 
     @ExceptionHandler
-    fun handleValidationException(exception: MethodArgumentNotValidException): ResponseEntity<List<ErrorValidation>> {
-        val errors = exception.fieldErrors.map { error ->
-            val field = error.field
-            val message = error.defaultMessage ?: "Invalid value"
-            ErrorValidation(field, message)
+    fun handleValidationException(exception: ConstraintViolationException): ResponseEntity<List<FieldError>> {
+        val errors = exception.constraintViolations.map { error ->
+            val field = error.propertyPath.toString().substringAfterLast(".")
+            val message = error.message ?: "Invalid value"
+
+            FieldError(field, message)
         }
 
         return ResponseEntity(errors, HttpStatus.BAD_REQUEST)
