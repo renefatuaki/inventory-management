@@ -57,10 +57,6 @@ class ProductService(private val productRepository: ProductRepository) {
     }
 
     fun deleteProduct(id: String) {
-        if (!productRepository.existsById(id.toLong())) {
-            throw ProductNotFoundException("Product not found with id: $id")
-        }
-
         productRepository.deleteById(id.toLong())
     }
 }
