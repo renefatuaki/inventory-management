@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ProductServiceTest {
     private val productRepository: ProductRepository = mock()
@@ -26,7 +27,6 @@ class ProductServiceTest {
     @Test
     fun getPageableProducts_FirstPageWithProducts_ReturnsPageableProducts() {
         val pageable: Pageable = PageRequest.of(0, 20, Sort.Direction.ASC, "id")
-
         val products = listOf(
             Product(1L, "A", "...", 10.0, 50),
             Product(2L, "B", "...", 20.0, 100)
@@ -45,14 +45,14 @@ class ProductServiceTest {
 
     @Test
     fun addProduct_ValidProduct_ReturnsSavedProduct() {
-        val product = Product(null, "A", "...", 10.0, 50)
-        val savedProduct = Product(1L, "A", "...", 10.0, 50)
+        val productDto = ProductDto(null, "A", "...", 10.0, 50)
+        val product = Product(1L, "A", "...", 10.0, 50)
 
-        whenever(productRepository.save(product)).thenReturn(savedProduct)
+        whenever(productRepository.save(any())).thenReturn(product)
 
-        val result = productService.addProduct(product)
+        val result = productService.addProduct(productDto)
 
-        assertEquals(savedProduct, result)
+        assertTrue { result == product.toDto() }
     }
 
     @Test
@@ -63,14 +63,13 @@ class ProductServiceTest {
 
         val result = productService.getProduct("1")
 
-        assertEquals(1L, result.id)
-        assertEquals("A", result.name)
+        assertTrue { result == product.toDto() }
     }
 
     @Test
     fun getProduct_ProductDoesNotExist_ThrowsProductNotFoundException() {
         val id = "1"
-        whenever(productRepository.findById(1L)).thenReturn(Optional.empty())
+        whenever(productRepository.findById(id.toLong())).thenReturn(Optional.empty())
 
         val exception = assertThrows<ProductNotFoundException> { productService.getProduct(id) }
 
@@ -80,32 +79,24 @@ class ProductServiceTest {
     @Test
     fun updateProduct_ProductExists_UpdatesAndReturnsProductDto() {
         val existingProduct = Product(1L, "A", "...", 10.0, 50)
-        val updatedProduct = Product(null, "A", "...", 15.0, 25)
+        val productDto = ProductDto(null, "A", "...", 15.0, 25)
         val savedProduct = Product(1L, "A", "...", 15.0, 25)
-        val expectedResult = ProductDto(
-            savedProduct.id!!,
-            savedProduct.name,
-            savedProduct.description,
-            savedProduct.price,
-            savedProduct.stock
-        )
+        val expectedResult = savedProduct.toDto()
 
         whenever(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct))
         whenever(productRepository.save(any<Product>())).thenReturn(savedProduct)
 
-        val result = productService.updateProduct("1", updatedProduct)
+        val result = productService.updateProduct("1", productDto)
 
-        assertEquals(15.0, result?.price)
-        assertEquals(25, result?.stock)
         assertEquals(expectedResult, result)
     }
 
     @Test
     fun updateProduct_ProductDoesNotExists_ThrowsProductNotFoundException() {
         val id = "1"
-        val updatedProduct = Product(null, "A", "...", 15.0, 25)
+        val updatedProduct = ProductDto(null, "A", "...", 15.0, 25)
 
-        whenever(productRepository.findById(1L)).thenReturn(Optional.empty())
+        whenever(productRepository.findById(id.toLong())).thenReturn(Optional.empty())
 
         val exception = assertThrows<ProductNotFoundException> {
             productService.updateProduct(id, updatedProduct)
@@ -125,14 +116,12 @@ class ProductServiceTest {
     }
 
     @Test
-    fun deleteProduct_ProductDoesNotExists_ThrowsProductNotFoundException() {
+    fun deleteProduct_ProductDoesNotExists_IgnoreCase() {
         val id = "1"
-        whenever(productRepository.existsById(1L)).thenReturn(false)
+        whenever(productRepository.existsById(id.toLong())).thenReturn(false)
 
-        val exception = assertThrows<ProductNotFoundException> {
-            productService.deleteProduct(id)
-        }
+        productService.deleteProduct(id)
 
-        assertEquals("Product not found with id: $id", exception.message)
+        verify(productRepository, times(1)).deleteById(1L)
     }
 }
