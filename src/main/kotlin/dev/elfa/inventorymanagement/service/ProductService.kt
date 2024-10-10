@@ -51,13 +51,7 @@ class ProductService(private val productRepository: ProductRepository) {
 
         val savedProduct = productRepository.save(product)
 
-        return ProductDto(
-            savedProduct.id!!,
-            savedProduct.name,
-            savedProduct.description,
-            savedProduct.price,
-            savedProduct.stock
-        )
+        return savedProduct.toDto()
     }
 
     fun deleteProduct(id: String) {
