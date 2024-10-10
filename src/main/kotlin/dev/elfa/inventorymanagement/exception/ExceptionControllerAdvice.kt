@@ -22,6 +22,16 @@ class ExceptionControllerAdvice {
     }
 
     @ExceptionHandler
+    fun handleSaveExceptionException(exception: SaveException): ResponseEntity<ErrorMessage> {
+        val errorMessage = ErrorMessage(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            exception.message ?: "Could not save entity"
+        )
+
+        return ResponseEntity(errorMessage, HttpStatus.NOT_FOUND)
+    }
+
+    @ExceptionHandler
     fun handleValidationException(exception: MethodArgumentNotValidException): ResponseEntity<List<ErrorValidation>> {
         val errors = exception.fieldErrors.map { error ->
             val field = error.field

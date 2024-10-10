@@ -2,6 +2,7 @@ package dev.elfa.inventorymanagement.service
 
 import dev.elfa.inventorymanagement.dto.ProductDto
 import dev.elfa.inventorymanagement.exception.ProductNotFoundException
+import dev.elfa.inventorymanagement.exception.SaveException
 import dev.elfa.inventorymanagement.model.Product
 import dev.elfa.inventorymanagement.repository.ProductRepository
 import jakarta.validation.Valid
@@ -24,7 +25,7 @@ class ProductService(private val productRepository: ProductRepository) {
     fun addProduct(@Valid productDto: ProductDto): ProductDto {
         val product = productDto.toProduct()
         val savedProduct = runCatching { productRepository.save<Product>(product) }
-            .getOrElse { throw RuntimeException("Failed to save product") }
+            .getOrElse { throw SaveException("Failed to save product") }
 
         return savedProduct.toDto()
     }
@@ -49,7 +50,8 @@ class ProductService(private val productRepository: ProductRepository) {
             stock = updatedProduct.stock
         }
 
-        val savedProduct = productRepository.save(product)
+        val savedProduct = runCatching { productRepository.save<Product>(product) }
+            .getOrElse { throw SaveException("Failed to save product") }
 
         return savedProduct.toDto()
     }
